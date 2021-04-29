@@ -187,3 +187,8 @@ gem devise の Getting started 翻訳
 - https://zenn.dev/junki555/articles/83339b5d58f416
  docker-compose 下で rails new して Rails6.1+deviseを試す
 
+- https://qiita.com/piggydev/items/8a9f5cd4486861819a69
+ 【Rails】RuboCop 設定編（2020年10月版）
+
+ - https://tech.actindi.net/2019/07/19/085019
+ Rubocop Performanceを測ってみた。後編

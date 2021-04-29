@@ -1,4 +1,4 @@
-# docker-compse + rails で rspec を動作させる
+# docker-compose + rails で rspec を動作させる
 
 docker-compose で rails のアプリをつくり、rspec の system テストを動作させてみます。  
 

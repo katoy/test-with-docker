@@ -192,3 +192,17 @@ gem devise の Getting started 翻訳
 
  - https://tech.actindi.net/2019/07/19/085019
  Rubocop Performanceを測ってみた。後編
+
+ - https://qiita.com/Chanmoro/items/9a3c86bb465c1cce738a
+ 10分で理解する Selenium
+
+- https://techblog.zozo.com/entry/qa-webui-test-automation-01
+ Web UIテスト自動化の実行環境をSelenium Gridで
+
+- https://techblog.zozo.com/entry/autify-introduction
+ Autifyを導入してE2E自動テストを最適化した話
+
+- https://manabu-ito.hatenablog.com/entry/2020/11/12/232236
+ パスワードリセット機能の実装(sorcery)・letter_opener_webで、開発環境では実際にメール送らないように設定
+
+ 

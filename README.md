@@ -281,6 +281,11 @@ git diff config/environments/development.rb
 
 guest@example.com などで登録したアカウントのパスワード忘れ操作が可能になります。
 
+|![mail-hog](save/mail-hog.png)|
+|-
+
+|![new-password](save/new_password.png)|
+|-
 
 
 ## TODO リストの機能追加

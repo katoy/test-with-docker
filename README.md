@@ -5,7 +5,8 @@ docker-compose で rails のアプリをつくり、rspec の system テスト�
 テスト失敗時にスクリーンショットを撮るだけでなく、任意の場面でスクリーンショットを撮る事も試していきます。  
 
 [https://github.com/katoy/sample-app](https://github.com/katoy/sample-app) に 作成した docker 環境の
-コードをおいています。   
+コードをおいています。  
+[https://github.com/katoy/sample-app/commits](https://github.com/katoy/sample-app/commits) で、下の操作の区切りの良い箇所で commit した様子がわからいます。アイル内容の変化を知ることができます。  
 
 ## 開発環境
 
@@ -27,12 +28,14 @@ docker-compose で rails のアプリをつくり、rspec の system テスト�
 *  model spec ファイルを書いて、テストをパスさせます。
 
 
-## docker-compose で app(rails), db(mysql), chrome (selenium) を構築します
+## docker-compose で app(rails), db(mysql), chrome (selenium) を構築
 
 コンテナーに構成は、以下の図のようになります。  
 (cat save/docker-compose.yml | docker run -i funkwerk/compose_plantuml --link-graph | docker run -i think/plantuml > output.svg で生成)  
 
-![compose](save/compose.svg)
+|![compose](save/compose.svg)|
+|-
+
 
 app は rails サーバー、 db は mysql, chrome は selenium で使う chrome です。  
 
@@ -88,7 +91,8 @@ ctrl-c でログ表示を終了します。
 そして http://localhost:3000 にブラウザでアクセスしてください。  
 次の画面が表示されます。  
 
-![rails-home](save/rails-home.png)
+|![rails-home](save/rails-home.png)|
+|-
 
 ## rubocop の設定
 
@@ -119,7 +123,8 @@ $ docker-compose up -d
 再び http://localhost:3000 にブラウザでアクセスしてください。  
 次の画面が表示されます。  
 
-![rails-home](save/home-index.png)
+|![rails-home](save/home-index.png)|
+|-
 
 ## system テスト の実行
 
@@ -146,10 +151,14 @@ $ docker-compose run --rm app bash
 ```
 
 * rspec の実行
-![rspec](save/run-rspec-sysem.png)
+
+|![rspec](save/run-rspec-sysem.png)|
+|-
 
 * screenshots/root.png
-![scrennshots/root.png](save/screenshots-root.png)
+
+|![scrennshots/root.png](save/screenshots-root.png)|
+|-
 
 sample_spec,rb では 2 つのテストをしています。  
 1つは /home にアクセスした時の画面に "こんにちは" が含まれていること、  
@@ -158,14 +167,127 @@ sample_spec,rb では 2 つのテストをしています。
 "こんにちは" が含まれていることのテストは聖句します。  
 さらに page.driver.save_screenshot 'screenshots/root.png' としてスクリーンショットを撮っています。  
 
-![root.png](save/root.png)
+|![root.png](save/root.png)|
+|-
 
 2 つ目のテストは失敗します (わざと失敗させてます)  
 system テストでは失敗した時に自動でスクリーンショットが tmp/scrinshots 以下に保存されます。  
 
-![failer.png](failer.png)
+|![failer.png](save/failer.png)|
+|-
 
-## request テスト の実行
+## devise の設定
+
+ログイン制御を整備していきます。
+
+```consode
+$ rails g devise:views users  
+
+$ cp ../test-with-docker/save/home_controller.rb app/controllers/home_controller.rb  
+$ cp ../test-with-docker/save/application.html.erb app/views/layouts/application.html.erb  
+$ cp ../test-with-docker/save/application.rb config/application.rb  
+$ cp ../test-with-docker/save/routes.rb-2 config/routes.rb  
+$ cp ../test-with-docker/save/devise.html.erb app/views/layouts/devise.html.erb  
+```
+
+config/initializers/devise.rb中の 次の行のコメントを外す。  
+
+```
+config.scoped_views = true  
+```
+
+```consolse
+$ docker-compose restart app
+$ docker-compose logs -f app
+```
+
+rails の起動が終了したのを確認したら、 ctrl-c で logs の監視を終了して、 http://localhost:3000 にアクセスします。
+
+この編集作業により、次の湯に画面が変化します。  
+ログインしていない状態で http://local:3000 にアクセスすると  
+
+|![before-login](save/before-login.png)|
+|-
+
+ログインすると  
+
+|![after-login](save/after-login.png)|
+|-
+
+devise の各種メッセージを日本語化します。  
+
+Gemifile を編集する。  
+
+```diff
+git diff Gemfile
+ gem 'bootsnap', '>= 1.4.2', require: false
+ 
+ gem 'devise'
++gem 'devise-i18n'
++gem 'devise-i18n-views'
+ 
+ group :development, :test do
+ ```
+
+config/application.rb を編集する。  
+
+```diff
+git diff config/application.rb
+     config.load_defaults 6.0
++    config.i18n.default_locale = :ja
+ 
+     # Settings in config/environments/* take precedence over those specified here.
+```
+
+docker-compos build, docker-compose up して http://localhost:3000 にアクセスしてみてください。  
+
+|![devise-japanese](save/devise-japanese.png)|
+|-
+
+## mailhog の編集  
+
+```vonsole
+$ dc_run_rm bundle exec app rails g devise:views
+```
+
+ ```diff
+git diff docker-compose.yml  
+     ports:
+       - 4444:4444
+ 
++  mailhog:
++    image: mailhog/mailhog:v1.0.0
++    ports:
++      - "8025:8025"
++
+   app:
+     build: .
+ ```
+
+config/environments/development.rb 編集  
+
+ ```diff
+git diff config/environments/development.rb  
+   # routes, locales, etc. This feature depends on the listen gem.
+   config.file_watcher = ActiveSupport::EventedFileUpdateChecker
++
++  config.action_mailer.delivery_method = :smtp
++  config.action_mailer.smtp_settings = { address: 'mailhog', port: 1025 }
++  config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
+ end
+```
+
+この変更により、rail から送信されためメールは http://localhost:8025/ の画面から確認できるようになります。  
+
+guest@example.com などで登録したアカウントのパスワード忘れ操作が可能になります。
+
+
+
+## TODO リストの機能追加
+
+TODO
+
+## requests テスト の実行
 
 TODO
 
@@ -205,4 +327,12 @@ gem devise の Getting started 翻訳
 - https://manabu-ito.hatenablog.com/entry/2020/11/12/232236
  パスワードリセット機能の実装(sorcery)・letter_opener_webで、開発環境では実際にメール送らないように設定
 
- 
+- https://qiita.com/tomoharutt/items/596388788af9bedd68ff
+ deviseのログイン画面でのみ、application.html.erbを除外する
+
+- https://qiita.com/nkekisasa222/items/ea79b522d9fdf83aa484
+ [Rails]'devise'エラーメッセージの日本語化
+
+- https://qiita.com/onikan/items/1dd9ebfa891632d60e73
+ 【Rails6】Action mailerでメール送信までを解説してみる。(MailHogも使うよ)
+

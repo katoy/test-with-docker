@@ -290,11 +290,208 @@ guest@example.com などで登録したアカウントのパスワード忘れ�
 
 ## TODO リストの機能追加
 
-TODO
+```console
+$ docker-compose run --rm app bundle exec rails generate scaffold task name:string status:boolean
+$ docker-compose run --rm app bundle exec rails generate model connection user:references task:references
+$ docker-compose run --rm app bundle exec rails db:migrate
+
+$ docker-compose restart app
+```
+
+http://localhost:3000/task にアクセスして、タスク追加、一覧表示などをしてみてください。  
+
+|![tasks](save/tasks.png)|
+|-
+タスク系画面の表示はログインが必要となるようにします。  
+task_controoler を編集します。  
+
+
+## AdminLTE 3 の導入
+
+```console
+$ yarn add bootstrap jquery popper.js
+```
+
+次のファイルの編集をします。  
+
+config/webpack/environment.js
+
+```diff
+-const { environment } = require('@rails/webpacker')
++const {environment} = require('@rails/webpacker')
++
++const webpack = require('webpack')
++
++environment.plugins.append('Provide',
++    new webpack.ProvidePlugin({
++        $: 'jquery',
++        jQuery: 'jquery',
++        Popper: ['popper.js', 'default']
++    })
++)
+ 
+ module.exports = environment
+```
+
+config/webpacker.yml
+
+```diff
+   # Additional paths webpack should lookup modules
+   # ['app/assets', 'engine/foo/app/assets']
+-  resolved_paths: []
++  resolved_paths: ['app/assets']
+```
+
+```console
+$ mkdir app/javascript/stylesheets
+$ touch app/javascript/stylesheets/application.scss
+```
+
+app/javascript/stylesheets/application.scss
+
+```
+@import "bootstrap";
+```
+
+app/javascript/packs/application.js
+
+```diff
+ require("@rails/activestorage").start()
+ require("channels")
+ 
++import 'bootstrap';
++import '../stylesheets/application'; // This file will contain your custom CSS
++
++document.addEventListener("turbolinks:load", () => {
++  $('[data-toggle="tooltip"]').tooltip()
++});
+```
+
+http://localhost:3000/tasks にアクセスしてみると、フォントなどが変化してます。
+
+|![inst_AdminLET3](save/inst_AdminLET3.png)|
+|-
+
+AdminLTE のテンプレートを画面に適用していきます。  
+
+```console
+$ docker-compose run --rm app yarn add admin-lte@^3.0
+```
+
+app/javascript/packs/application.js
+
+```diff
+ require("channels")
++require('admin-lte');
+ 
+ import 'bootstrap';
+```
+
+app/javascript/stylesheets/application.scss
+
+```diff
+ @import "bootstrap";
++@import "admin-lte";
+```
+
+```consolse
+$ docker-compose run --rm app yarn add @fortawesome/fontawesome-free
+```
+
+app/javascript/stylesheets/application.scss
+
+```diff
+ @import "bootstrap";
++@import "admin-lte";
++@import '@fortawesome/fontawesome-free';
+```
+
+app/views/layouts/application.html.erb  
+(ファイル内容は github を参照してください)
+
+
+```console
+$ mkdir app/views/base
+$ touch app/views/base/_header.html.erb
+$ touch app/views/base/_sidebar.html.erb
+$ touch app/views/base/_footer.html.erb
+$ touch app/views/base/_control_sidebar.html.erb
+
+$ cp ./node_modules/admin-lte/dist/img/AdminLTELogo.png app/assets/images/
+$ cp ./node_modules/admin-lte/dist/img/user2-160x160.jpg app/assets/images/
+```
+
+app/views/base/*.html.erb, app/views/layouts/application.html.erb の変更内容は 
+https://github.com/katoy/sample-app/commit/3cd3fb1907686ee595ee18edf19fea26b03a8342
+を参照してきださい。  
+
+次のような画面になります。  
+
+|![adminLTLE](save/adminLTE.png)|
+|-
+
+
+さらに、一覧、詳細、編集画面を bootstarp で整形します。  
+変更内容は github を参照してください。
+
+```
+app/assets/stylesheets/tasks.scss  
+app/javascript/packs/application.js  
+app/javascript/packs/tasks/index.js  
+app/views/base/_sidebar.html.erb  
+pp/views/tasks/_form.html.erb  
+app/views/tasks/edit.html.erb  
+app/views/tasks/index.html.erb  
+app/views/tasks/new.html.erb  
+```
+
+pp/views/tasks/show.html.erb
+## rubocop 設定
+
+Gemfile の developmetn ブロックに以下を追加する。  
+
+```
+  gem 'rubocop', require: false
+  gem 'rubocop-performance', require: false
+  gem 'rubocop-rails', require: false
+  gem 'rubocop-packaging', require: false
+  gem 'rubocop-rspec'
+```
+
+https://github.com/rails/rails/blob/main/.rubocop.yml
+を copy して使うことにします。  
+ただし、次のルールだけは変更します。  
+
+```
+# Style/StringLiterals:
+#   Enabled: true
+#   EnforcedStyle: double_quotes
+```
+
+rubocop 警告をなくしていきます。  
+変数内容は github の commitw を参照してください。  
+こんな画面になります。  
+
+|![bootstrap-index](save/bootstrap-index.png)|
+|-
+
+## systm テスト の変更
+
+ddevise を導入した際に、ログインしていないとページ閲覧出来ないようにしました。そのため現時点では、home ページのテストは失敗します。  
+まずは、これが PASS するようにしていきます。  
+
+ログイン画面に適切な値を入力し、ログインをする手続きを login というメソッドに記載し、それを呼び出してから テストを行うようにしています。  
+
+変更点は github を参照してください。  
 
 ## requests テスト の実行
 
-TODO
+devise の sign_in というメソッドで、ログイン状態にすることができます。  
+
+変更点は github を参照してください。  
+
+|![request_home_spec](save/request_spec_home.png)|
+|-
 
 ## models テスト の実行
 
@@ -340,4 +537,25 @@ gem devise の Getting started 翻訳
 
 - https://qiita.com/onikan/items/1dd9ebfa891632d60e73
  【Rails6】Action mailerでメール送信までを解説してみる。(MailHogも使うよ)
+
+- https://ccbaxy.xyz/blog/2019/11/06/ruby11/#moderu
+ Ruby on Rails での多対多のアソシエーションの設定方法
+
+- https://dev.to/brayvasq/integrate-andminlte-with-ruby-on-rails-6-od7
+ Integrate AndminLTE with Ruby On Rails 6
+
+- https://medium-company.com/rails6-adminlte-%E4%B8%80%E8%A6%A7%E7%94%BB%E9%9D%A2/#applicationhtmlerb
+ Rails + AdminLTEで一覧画面を作成する
+
+- https://www.betterspecs.org/
+ What is Better Specs
+
+- https://laptrinhx.com/rails-rspecde-devisenosingn-inwo-shitteroguin-chu-liwo-shuku-1607707419/
+ 【Rails】Rspecで、deviseのsingn_inを使ってログイン処理を書く
+
+- https://techtechmedia.com/font-awesome-rails6/
+ 【Rails】Rails6でFontAwesomeを導入・表示させるための手順を初心者向けに解説
+
+ - https://qiita.com/t2kojima/items/ad7a8ade9e7a99fb4384
+ Rails5でコントローラのテストをController specからRequest specに移行する
 

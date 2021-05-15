@@ -497,6 +497,43 @@ devise の sign_in というメソッドで、ログイン状態にすること�
 
 TODO
 
+## stripe をつかったクレジッ地カーで支払い機能
+
+5ドルの支払いをクレジットカードでする例を作ってみます。  
+https://sloboda-studio.com/blog/how-to-use-stripe-in-ruby-on-rails-app/ の例を真似しているだけす。
+ただし、シークレットキーの扱いを変更しています。  
+config/credentials.yml.enc にキーを暗号化して記載するようにします。以下のように操作して config/credentials.yml.enc は編集します。　　
+
+```
+$ docker-compose run --rm app bash
+
+$ EDITOR='vim' rails credentials:edit
+　次のような行を追加する。
+
+stripe:
+  publishable_key: pk_test_51Ir0njJ .....
+  secret_key: sk_test_...
+```
+
+キーの値は stripe のページ https://dashboard.stripe.com/test/apikeys に示されているテスト用のキー値を使います。  
+
+http://localhost:3000/charges/new にアクセ死して、 [Pay With Card] ボタンをクリックします。  
+
+|![charges-new3](save/charges-new.png)|
+|-
+
+|![stripe-dialog](save/stripe-dialog.png)|
+|-
+
+テストに使えるクレジットカード番号は　https://stripe.com/docs/testing#cards を参照してください。  
+
+stripe の支払い記録のページ https://dashboard.stripe.com/test/payments 
+にアクセスすることで、支払い記録などを閲覧したり、返金処理ができます。  
+
+|![stripe-console](save/stripe-console.png)|
+|-
+
+
 ## 参考記事
 
 - https://qiita.com/masarashi/items/61c5d9c63e9588b948f0
@@ -558,4 +595,11 @@ gem devise の Getting started 翻訳
 
  - https://qiita.com/t2kojima/items/ad7a8ade9e7a99fb4384
  Rails5でコントローラのテストをController specからRequest specに移行する
+
+
+ - https://sloboda-studio.com/blog/how-to-use-stripe-in-ruby-on-rails-app/
+ How to Use Stripe in Ruby on Rails App
+
+- https://techtechmedia.com/credentials-masterkey-rails/
+ 【Rails】「credentials.yml.enc」と「master.key」の使い方について詳しく解説！
 

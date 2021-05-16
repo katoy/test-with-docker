@@ -603,3 +603,6 @@ gem devise の Getting started 翻訳
 - https://techtechmedia.com/credentials-masterkey-rails/
  【Rails】「credentials.yml.enc」と「master.key」の使い方について詳しく解説！
 
+- https://stackoverflow.com/questions/65116860/
+ Accessing file downloads from containerized RSpec/Capybara and Selenium Chrome
+

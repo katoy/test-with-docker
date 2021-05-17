@@ -497,7 +497,7 @@ devise の sign_in というメソッドで、ログイン状態にすること�
 
 TODO
 
-## stripe をつかったクレジッ地カーで支払い機能
+## stripe をつかったクレジットカード支払い機能
 
 5ドルの支払いをクレジットカードでする例を作ってみます。  
 https://sloboda-studio.com/blog/how-to-use-stripe-in-ruby-on-rails-app/ の例を真似しているだけす。

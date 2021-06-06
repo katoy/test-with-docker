@@ -606,3 +606,11 @@ gem devise の Getting started 翻訳
 - https://stackoverflow.com/questions/65116860/
  Accessing file downloads from containerized RSpec/Capybara and Selenium Chrome
 
+- https://techracho.bpsinc.jp/hachi8833/2017_09_28/45536
+ Rails: ActiveModelSerializersでAPIを作る–Part 1（翻訳）
+
+- https://techracho.bpsinc.jp/hachi8833/2017_10_03/45639
+ Rails: ActiveModelSerializersでAPIを作る–Part 2 RSpec編（翻訳）
+
+ - https://qiita.com/minato-naka/items/3b0bcf0788a2150f3171
+ OpenAPI（Swagger）のAPI開発Docker環境を整備した（yaml分割編集、SwaggerUI表示、モックサーバー、静的HTML出力）
